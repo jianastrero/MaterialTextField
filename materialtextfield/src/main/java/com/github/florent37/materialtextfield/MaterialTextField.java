@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 
 public class MaterialTextField extends FrameLayout {
-    protected InputMethodManager inputMethodManager;
+
 
     protected TextView label;
     protected View card;
@@ -35,30 +35,21 @@ public class MaterialTextField extends FrameLayout {
     protected int labelColor = -1;
     protected int imageDrawableId = -1;
     protected int cardCollapsedHeight = -1;
-    protected boolean hasFocus = false;
-    protected int backgroundColor = -1;
 
     protected float reducedScale = 0.2f;
 
     public MaterialTextField(Context context) {
         super(context);
-        init();
     }
 
     public MaterialTextField(Context context, AttributeSet attrs) {
         super(context, attrs);
-        handleAttributes(context, attrs);
-        init();
+        handleAttributes(context,attrs);
     }
 
     public MaterialTextField(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         handleAttributes(context, attrs);
-        init();
-    }
-
-    protected void init() {
-        inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
     }
 
     public void toggle() {
@@ -71,59 +62,42 @@ public class MaterialTextField extends FrameLayout {
 
     public void reduce() {
         if (expanded) {
-            final int heightInitial = getContext().getResources().getDimensionPixelOffset(R.dimen.mtf_cardHeight_final);
 
+            final int heightInitial = getContext().getResources().getDimensionPixelOffset(com.github.florent37.materialtextfield.R.dimen.mtf_cardHeight_final);
             ViewCompat.animate(label)
-                .alpha(1)
-                .scaleX(1)
-                .scaleY(1)
-                .translationY(0)
-                .setDuration(ANIMATION_DURATION);
+                    .alpha(1)
+                    .scaleX(1)
+                    .scaleY(1)
+                    .translationY(0)
+                    .setDuration(ANIMATION_DURATION);
 
             ViewCompat.animate(image)
-                .alpha(0)
-                .scaleX(0.4f)
-                .scaleY(0.4f)
-                .setDuration(ANIMATION_DURATION);
+                    .alpha(0)
+                    .scaleX(0.4f)
+                    .scaleY(0.4f)
+                    .setDuration(ANIMATION_DURATION);
 
             ViewCompat.animate(editText)
-                .alpha(1f)
-                .setUpdateListener(new ViewPropertyAnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(View view) {
-                        float value = ViewCompat.getAlpha(view); //percentage
-                        card.getLayoutParams().height = (int) (value * (heightInitial - cardCollapsedHeight) + cardCollapsedHeight);
-                        card.requestLayout();
-                    }
-                })
-                .setDuration(ANIMATION_DURATION)
-                .setListener(new ViewPropertyAnimatorListener() {
-                    @Override
-                    public void onAnimationStart(View view) {
-                        if (expanded) {
-                            editText.setVisibility(View.VISIBLE);
+                    .alpha(0f)
+                    /*.setUpdateListener(new ViewPropertyAnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(View view) {
+                            float value = ViewCompat.getAlpha(view); //percentage
+                            card.getLayoutParams().height = (int) (value * (heightInitial - cardCollapsedHeight) + cardCollapsedHeight);
+                            card.requestLayout();
                         }
-                    }
-
-                    @Override
-                    public void onAnimationEnd(View view) {
-                        if (!expanded) {
-                            editText.setVisibility(View.INVISIBLE);
-                        }
-                    }
-
-                    @Override
-                    public void onAnimationCancel(View view) { }
-                });
+                    })*/
+                    .setDuration(ANIMATION_DURATION);
 
             ViewCompat.animate(card)
-                .scaleY(reducedScale)
-                .setDuration(ANIMATION_DURATION);
+                    .scaleY(reducedScale)
+                    .setDuration(ANIMATION_DURATION);
 
-            if (editText.hasFocus()) {
-                inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                editText.clearFocus();
+
+            if (OPEN_KEYBOARD_ON_FOCUS) {
+                ((InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
             }
+            editText.clearFocus();
 
             expanded = false;
         }
@@ -131,45 +105,35 @@ public class MaterialTextField extends FrameLayout {
 
     public void expand() {
         if (!expanded) {
+
             ViewCompat.animate(editText)
-                .alpha(1f)
-                .setDuration(ANIMATION_DURATION);
+                    .alpha(1f)
+                    .setDuration(ANIMATION_DURATION);
 
             ViewCompat.animate(card)
-                .scaleY(1f)
-                .setDuration(ANIMATION_DURATION);
+                    .scaleY(1f)
+                    .setDuration(ANIMATION_DURATION);
 
             ViewCompat.animate(label)
-                .alpha(0.4f)
-                .scaleX(0.7f)
-                .scaleY(0.7f)
-                .translationY(-labelTopMargin)
-                .setDuration(ANIMATION_DURATION);
+                    .alpha(0.4f)
+                    .scaleX(0.7f)
+                    .scaleY(0.7f)
+                    .translationY(-labelTopMargin)
+                    .setDuration(ANIMATION_DURATION);
 
             ViewCompat.animate(image)
-                .alpha(1f)
-                .scaleX(1f)
-                .scaleY(1f)
-                .setDuration(ANIMATION_DURATION);
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(ANIMATION_DURATION);
 
-            if (editText != null) {
-                editText.requestFocus();
-            }
-
+            editText.requestFocus();
             if (OPEN_KEYBOARD_ON_FOCUS) {
-                inputMethodManager.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+                ((InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
             }
 
             expanded = true;
         }
-    }
-
-    public void setBackgroundColor(int color) {
-        this.backgroundColor = color;
-    }
-
-    public int getBackgroundColor() {
-        return this.backgroundColor;
     }
 
     public View getCard() {
@@ -196,46 +160,24 @@ public class MaterialTextField extends FrameLayout {
         return expanded;
     }
 
-    public void setHasFocus(boolean hasFocus) {
-        this.hasFocus = hasFocus;
-
-        if (hasFocus) {
-            expand();
-            editText.postDelayed(new Runnable() {
-                public void run() {
-                    editText.requestFocusFromTouch();
-                    inputMethodManager.showSoftInput(editText, 0);
-                }
-            }, 300);
-        } else {
-            reduce();
-        }
-    }
-
     protected void handleAttributes(Context context, AttributeSet attrs) {
         try {
-            TypedArray styledAttrs = context.obtainStyledAttributes(attrs, R.styleable.MaterialTextField);
+            TypedArray styledAttrs = context.obtainStyledAttributes(attrs, com.github.florent37.materialtextfield.R.styleable.MaterialTextField);
 
             {
-                ANIMATION_DURATION = styledAttrs.getInteger(R.styleable.MaterialTextField_mtf_animationDuration, 400);
+                ANIMATION_DURATION = styledAttrs.getInteger(com.github.florent37.materialtextfield.R.styleable.MaterialTextField_mtf_animationDuration, 400);
             }
             {
-                OPEN_KEYBOARD_ON_FOCUS = styledAttrs.getBoolean(R.styleable.MaterialTextField_mtf_openKeyboardOnFocus, false);
+                OPEN_KEYBOARD_ON_FOCUS = styledAttrs.getBoolean(com.github.florent37.materialtextfield.R.styleable.MaterialTextField_mtf_openKeyboardOnFocus, false);
             }
             {
-                labelColor = styledAttrs.getColor(R.styleable.MaterialTextField_mtf_labelColor, -1);
+                labelColor = styledAttrs.getColor(com.github.florent37.materialtextfield.R.styleable.MaterialTextField_mtf_labelColor, -1);
             }
             {
-                imageDrawableId = styledAttrs.getResourceId(R.styleable.MaterialTextField_mtf_image, -1);
+                imageDrawableId = styledAttrs.getResourceId(com.github.florent37.materialtextfield.R.styleable.MaterialTextField_mtf_image, -1);
             }
             {
-                cardCollapsedHeight = styledAttrs.getDimensionPixelOffset(R.styleable.MaterialTextField_mtf_cardCollapsedHeight, context.getResources().getDimensionPixelOffset(R.dimen.mtf_cardHeight_initial));
-            }
-            {
-                hasFocus = styledAttrs.getBoolean(R.styleable.MaterialTextField_mtf_hasFocus, false);
-            }
-            {
-                backgroundColor = styledAttrs.getColor(R.styleable.MaterialTextField_mtf_backgroundColor, -1);
+                cardCollapsedHeight = styledAttrs.getDimensionPixelOffset(com.github.florent37.materialtextfield.R.styleable.MaterialTextField_mtf_cardCollapsedHeight, context.getResources().getDimensionPixelOffset(com.github.florent37.materialtextfield.R.dimen.mtf_cardHeight_initial));
             }
 
             styledAttrs.recycle();
@@ -260,13 +202,13 @@ public class MaterialTextField extends FrameLayout {
             return;
         }
 
-        addView(LayoutInflater.from(getContext()).inflate(R.layout.mtf_layout, this, false));
+        addView(LayoutInflater.from(getContext()).inflate(com.github.florent37.materialtextfield.R.layout.mtf_layout, this, false));
 
-        editTextLayout = (ViewGroup) findViewById(R.id.mtf_editTextLayout);
+        editTextLayout = (ViewGroup) findViewById(com.github.florent37.materialtextfield.R.id.mtf_editTextLayout);
         removeView(editText);
         editTextLayout.addView(editText);
 
-        label = (TextView) findViewById(R.id.mtf_label);
+        label = (TextView) findViewById(com.github.florent37.materialtextfield.R.id.mtf_label);
         ViewCompat.setPivotX(label, 0);
         ViewCompat.setPivotY(label, 0);
 
@@ -275,21 +217,17 @@ public class MaterialTextField extends FrameLayout {
             editText.setHint("");
         }
 
-        card = findViewById(R.id.mtf_card);
+        card = findViewById(com.github.florent37.materialtextfield.R.id.mtf_card);
 
-        if (backgroundColor != -1) {
-            card.setBackgroundColor(backgroundColor);
-        }
-
-        final int expandedHeight = getContext().getResources().getDimensionPixelOffset(R.dimen.mtf_cardHeight_final);
+        final int expandedHeight = getContext().getResources().getDimensionPixelOffset(com.github.florent37.materialtextfield.R.dimen.mtf_cardHeight_final);
         final int reducedHeight = cardCollapsedHeight;
 
         reducedScale = (float) (reducedHeight * 1.0 / expandedHeight);
         ViewCompat.setScaleY(card, reducedScale);
         ViewCompat.setPivotY(card, expandedHeight);
 
-        image = (ImageView) findViewById(R.id.mtf_image);
-        ViewCompat.setAlpha(image, 0);
+        image = (ImageView) findViewById(com.github.florent37.materialtextfield.R.id.mtf_image);
+        ViewCompat.setAlpha((View) image, 0);
         ViewCompat.setScaleX(image, 0.4f);
         ViewCompat.setScaleY(image, 0.4f);
 
@@ -307,17 +245,17 @@ public class MaterialTextField extends FrameLayout {
             }
         });
 
-        setHasFocus(hasFocus);
     }
 
     protected void customizeFromAttributes() {
         if (labelColor != -1) {
             this.label.setTextColor(labelColor);
         }
-
         if (imageDrawableId != -1) {
-            this.image.setImageDrawable(ContextCompat.getDrawable(getContext(), imageDrawableId));
+            this.image.setImageDrawable(getContext().getResources().getDrawable(imageDrawableId));
         }
     }
+
+
 
 }
